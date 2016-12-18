@@ -2,21 +2,21 @@ size = 32
 board = {}
 for i in range(size):
     for j in range(size):
-        board[(i, j)] = 0
+        board[(i, j)] = {}
 
 def find_neighbors(pair):
-    l = []
+    l = set()
     for a in [-1, 0, 1]:
         for b in [-1, 0, 1]:
             if a == b == 0:
                 continue
-            l.append((pair[0]+a, pair[1]+b))
+            l.add({(pair[0]+a, pair[1]+b)})
     return l
 
-def get_list(l):
+def get_all(l):
     r = []
     for p in l:
-        r.append(board.get(p, 0))
+        r.append(board.get(p, {}))
     return r
 
 def inc():
@@ -27,21 +27,19 @@ def inc():
             board2[(i,j)] = decide((i,j))
     board = board2.copy()
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
 def decide(pair):
-    v = 0
+    v = {}
     p = board[pair]
-    n = get_list(find_neighbors(pair))
-    if p == 0:
-        v = []
-        for p in set(n)-{0}:
+    n = flatten(get_all(find_neighbors(pair)))
+    if p == {}:
+        for p in set(n):
             if n.count(p) == 3:
-                v.append(p)
-        if len(v) == 1:
-            v = v[0]
-        else:
-            v = 0
+                v += p
     else:
-        if all(s == 0 or s == p for s in n):
+        if all(s == {} or p <= s for s in n):
             c = n.count(p)
             if c in [2,3]:
                 v = p
@@ -53,16 +51,23 @@ def disp():
     s = ""
     for j in range(size)[::-1]:
         for i in range(size):
-            s += str(board[(i, j)]) + ' '
+            s += disp_val((i, j)) + ' '
         s += '\n'
     print(s)
 
+def disp_val(pair):
+    cell = board[pair]
+    v = 1
+    for i in cell:
+        v *= i
+    return v
+
 def start():
     clear()
-    board[(size/2, size/2)] = 1
-    board[(size/2 -1, size/2)] = 1
-    board[(size/2, size/2 -1)] = 1
-    board[(size/2 -1, size/2 -1)] = 1
+    board[(size/2, size/2)] = {2}
+    board[(size/2 -1, size/2)] = {2}
+    board[(size/2, size/2 -1)] = {2}
+    board[(size/2 -1, size/2 -1)] = {2}
 
 def loop():
     states = []
